@@ -3,79 +3,77 @@ import { useEffect, useState } from 'react'
 import SidebarLayout from '@/components/SidebarLayout'
 
 export default function ShopPage() {
-  const [items, setItems] = useState([])
+  const [gallery, setGallery] = useState([])
   const [cart, setCart] = useState([])
 
   useEffect(() => {
-    const stored = localStorage.getItem('gallery')
-    if (stored) {
-      const all = JSON.parse(stored)
-      const available = all.filter((img) => img.available)
-      setItems(available)
+    const storedGallery = localStorage.getItem('gallery')
+    if (storedGallery) {
+      setGallery(JSON.parse(storedGallery))
     }
 
     const storedCart = localStorage.getItem('cart')
-    if (storedCart) setCart(JSON.parse(storedCart))
+    if (storedCart) {
+      setCart(JSON.parse(storedCart))
+    }
   }, [])
 
-  const addToCart = (item) => {
-    const updated = [...cart, item]
-    setCart(updated)
-    localStorage.setItem('cart', JSON.stringify(updated))
-    alert('✅ เพิ่มสินค้าแล้ว!')
+  const handleAddToCart = (item) => {
+    const updatedCart = [...cart, item]
+    setCart(updatedCart)
+    localStorage.setItem('cart', JSON.stringify(updatedCart))
+    alert('✅ เพิ่มสินค้าลงตะกร้าแล้ว!')
   }
 
   return (
     <SidebarLayout>
       <h1 style={{ padding: '1rem' }}>🛍️ Shop</h1>
 
-      {items.length === 0 ? (
+      {gallery.filter((img) => img.available).length === 0 ? (
         <p style={{ padding: '1rem' }}>No available images at the moment.</p>
       ) : (
-        <div
-          style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            gap: '1rem',
-            padding: '1rem'
-          }}
-        >
-          {items.map((img, idx) => (
-            <div
-              key={idx}
-              style={{
-                flex: '1 0 200px',
-                border: '1px solid #ccc',
-                borderRadius: 8,
+        <div style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: '1rem',
+          padding: '1rem',
+          justifyContent: 'center'
+        }}>
+          {gallery
+            .filter((image) => image.available)
+            .map((image, index) => (
+              <div key={index} style={{
+                width: '250px',
+                borderRadius: '10px',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
                 overflow: 'hidden',
-                backgroundColor: '#fff',
-                boxShadow: '0 1px 5px rgba(0,0,0,0.1)'
-              }}
-            >
-              <img
-                src={`/images/${img.name}`}
-                alt={img.displayName}
-                style={{ width: '100%', height: 150, objectFit: 'cover' }}
-              />
-              <div style={{ padding: '0.75rem' }}>
-                <h4 style={{ marginBottom: '0.5rem' }}>{img.displayName}</h4>
-                <p style={{ fontWeight: 'bold' }}>${img.price}</p>
-                <button
-                  onClick={() => addToCart(img)}
-                  style={{
-                    backgroundColor: 'mediumseagreen',
-                    color: 'white',
-                    border: 'none',
-                    padding: '0.5rem 1rem',
-                    borderRadius: '5px',
-                    cursor: 'pointer'
-                  }}
-                >
-                  Add to cart
-                </button>
+                textAlign: 'center',
+                backgroundColor: '#fff'
+              }}>
+                <img
+                  src={`/images/${image.name}`}
+                  alt={image.displayName}
+                  style={{ width: '100%', height: '200px', objectFit: 'cover' }}
+                />
+                <div style={{ padding: '1rem' }}>
+                  <h3 style={{ margin: '0 0 0.5rem' }}>{image.displayName}</h3>
+                  <p style={{ marginBottom: '1rem' }}>${image.price}</p>
+                  <button
+                    onClick={() => handleAddToCart(image)}
+                    style={{
+                      backgroundColor: '#2ecc71',
+                      border: 'none',
+                      padding: '0.5rem 1rem',
+                      color: 'white',
+                      borderRadius: '5px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Add to cart
+                  </button>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
         </div>
       )}
     </SidebarLayout>

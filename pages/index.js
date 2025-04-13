@@ -1,3 +1,4 @@
+// pages/index.js
 import Head from 'next/head'
 import { useState, useEffect } from 'react'
 import SidebarLayout from '@/components/SidebarLayout'
@@ -26,7 +27,6 @@ export default function Home() {
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       </Head>
 
-      {/* 🔵 Home Section */}
       <section
         className="home"
         style={{
@@ -49,8 +49,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 🔵 About */}
       <h2 className="heading">About us</h2>
+
       <section className="about">
         <div className="row">
           <div className="pic-container">
@@ -72,22 +72,22 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 🔵 Shop Section */}
       <h2 className="heading">shop</h2>
+
       <section className="photos">
         {[
-          { img: 'LINE_ALBUM_Sky_230103_10.jpg', price: 10 },
-          { img: 'LINE_ALBUM_Sky_230103_22.jpg', price: 39 },
-          { img: 'LINE_ALBUM_Sky_230103_13.jpg', price: 49 },
-          { img: 'LINE_ALBUM_Sky_230103_14.jpg', price: 39 },
-          { img: 'LINE_ALBUM_Sky_230103_7.jpg', price: 10 },
-          { img: 'LINE_ALBUM_Sky_230103_29.jpg', price: 29 },
-          { img: 'LINE_ALBUM_Sky_230103_21.jpg', price: 10 },
-          { img: 'LINE_ALBUM_Sky_230103_20.jpg', price: 10 },
+          { name: 'LINE_ALBUM_Sky_230103_10.jpg', displayName: 'Moon Sky', price: 10 },
+          { name: 'LINE_ALBUM_Sky_230103_22.jpg', displayName: 'Sunset Over Field', price: 39 },
+          { name: 'LINE_ALBUM_Sky_230103_13.jpg', displayName: 'Golden Light', price: 49 },
+          { name: 'LINE_ALBUM_Sky_230103_14.jpg', displayName: 'Cloud Drama', price: 39 },
+          { name: 'LINE_ALBUM_Sky_230103_7.jpg', displayName: 'Grey & Calm', price: 10 },
+          { name: 'LINE_ALBUM_Sky_230103_29.jpg', displayName: 'Cloudy Morning', price: 29 },
+          { name: 'LINE_ALBUM_Sky_230103_21.jpg', displayName: 'Blue Evening', price: 10 },
+          { name: 'LINE_ALBUM_Sky_230103_20.jpg', displayName: 'City Light at Night', price: 10 },
         ].map((item, i) => (
           <div key={i}>
             <div className="photo">
-              <img src={`/images/${item.img}`} alt={`photo${i + 1}`} />
+              <img src={`/images/${item.name}`} alt={item.displayName} />
               <div className="icons-pic2">💜</div>
               <div className="price">${item.price}</div>
             </div>
@@ -98,8 +98,8 @@ export default function Home() {
         ))}
       </section>
 
-      {/* 🔵 Contact Section */}
       <h2 className="heading">Contact Us</h2>
+
       <section className="contact">
         <form>
           <input type="text" placeholder="name" />
@@ -112,41 +112,24 @@ export default function Home() {
 
       {/* 🔵 Footer */}
       <footer style={{ backgroundColor: '#eee', padding: '2rem 1rem', marginTop: '2rem' }}>
-  <div
-    style={{
-      display: 'flex',
-      flexWrap: 'wrap',
-      justifyContent: 'space-between',
-      maxWidth: '1200px',
-      margin: '0 auto',
-      paddingBottom: '1rem'
-    }}
-  >
-    {/* Left: extra links */}
-    <div style={{ flex: '1 1 300px' }}>
-      <h3 style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>extra links</h3>
-      <p>
-        <a href="#" style={{ color: 'purple', textDecoration: 'underline' }}>my account</a>
-      </p>
-    </div>
-
-    {/* Right: contact info */}
-    <div style={{ flex: '1 1 300px' }}>
-      <h3 style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>contact info</h3>
-      <p>095-118-9473</p>
-      <p>tmgamer13253@gmail.com</p>
-      <a href="https://www.instagram.com/nxic_ky/" style={{ color: 'purple', textDecoration: 'underline' }}>
-        https://www.instagram.com/nxic_ky/
-      </a>
-    </div>
-  </div>
-
-  {/* Credit */}
-  <p style={{ textAlign: 'center', fontSize: '0.85rem', color: '#333', marginTop: '1rem' }}>
-    created by Mr.Tangpanitan Khongbunpring | all rights reserved
-  </p>
-</footer>
-
+        <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap' }}>
+          <div>
+            <h3 style={{ marginBottom: '0.5rem' }}>extra links</h3>
+            <a href="#" style={{ color: 'purple', textDecoration: 'underline' }}>my account</a>
+          </div>
+          <div>
+            <h3 style={{ marginBottom: '0.5rem' }}>contact info</h3>
+            <p>095-118-9473</p>
+            <p>tmgamer13253@gmail.com</p>
+            <a href="https://www.instagram.com/nxic_ky/" style={{ color: 'purple', textDecoration: 'underline' }}>
+              https://www.instagram.com/nxic_ky/
+            </a>
+          </div>
+        </div>
+        <p style={{ marginTop: '2rem', fontSize: '0.9rem' }}>
+          created by Mr.Tangpanitan Khongbunpring | all rights reserved
+        </p>
+      </footer>
     </SidebarLayout>
   )
 }
