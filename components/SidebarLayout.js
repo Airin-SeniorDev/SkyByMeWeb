@@ -1,61 +1,44 @@
 // components/SidebarLayout.js
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
+import { usePathname } from 'next/navigation'
 
 export default function SidebarLayout({ children }) {
-  const [cartCount, setCartCount] = useState(0)
+  const pathname = usePathname()
 
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const storedCart = localStorage.getItem('cart')
-      if (storedCart) {
-        setCartCount(JSON.parse(storedCart).length)
-      }
-    }
-  }, [])
+  const linkStyle = {
+    color: '#fff',
+    textDecoration: 'none',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.3rem',
+  }
 
   return (
-    <div>
-      <nav style={{
-        width: '100%',
-        backgroundColor: '#2c3e50',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        padding: '0.5rem 2rem',
-        color: 'white',
-        fontSize: '1.1rem',
-        position: 'sticky',
-        top: 0,
-        zIndex: 1000,
-        height: '60px',
-        boxSizing: 'border-box'
-      }}>
-        {/* Logo and Site Name on Left */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <img src="/images/Sky By Me.png" alt="logo" style={{ width: '32px', height: '32px', objectFit: 'contain' }} />
-          <span style={{ fontWeight: 'bold', fontSize: '1.3rem' }}>SkyByMe</span>
-        </div>
-
-        {/* Icons/Links on Right */}
-        <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
-          <Link href="/" style={{ color: 'white', textDecoration: 'none' }}>🏠 Home</Link>
-          <Link href="/gallery" style={{ color: 'white', textDecoration: 'none' }}>🖼️ Gallery</Link>
-          <Link href="/account" style={{ color: 'white', textDecoration: 'none' }}>👤 Account</Link>
-          <Link href="/cart" style={{ color: 'white', textDecoration: 'none' }}>🛒 Cart ({cartCount})</Link>
-        </div>
-      </nav>
-
-      <main style={{ paddingTop: '1rem' }}>
-        {children}
-      </main>
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+      <header style={{ backgroundColor: '#2c3e50', padding: '1rem 2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#fff' }}>SkyByMe</div>
+        <nav style={{ display: 'flex', gap: '1.5rem' }}>
+          <Link href="/" legacyBehavior>
+            <a className={pathname === '/' ? 'active' : ''} style={linkStyle}>🏠 Home</a>
+          </Link>
+          <Link href="/shop" legacyBehavior>
+            <a className={pathname === '/shop' ? 'active' : ''} style={linkStyle}>🛍️ Shop</a>
+          </Link>
+          <Link href="/gallery" legacyBehavior>
+            <a className={pathname === '/gallery' ? 'active' : ''} style={linkStyle}>🖼️ Gallery</a>
+          </Link>
+          <Link href="/favorites" legacyBehavior>
+            <a className={pathname === '/favorites' ? 'active' : ''} style={linkStyle}>💜 Favorites</a>
+          </Link>
+          <Link href="/cart" legacyBehavior>
+            <a className={pathname === '/cart' ? 'active' : ''} style={linkStyle}>🛒 Cart</a>
+          </Link>
+          <Link href="/account" legacyBehavior>
+            <a className={pathname === '/account' ? 'active' : ''} style={linkStyle}>👤 Account</a>
+          </Link>
+        </nav>
+      </header>
+      <main style={{ flex: 1 }}>{children}</main>
     </div>
   )
 }
-
-// ✅ ใช้ layout นี้กับหน้าหลักทั้งหมด:
-// pages/index.js
-// pages/gallery.js
-// pages/account.js
-// pages/cart.js
-// pages/thank-you.js
