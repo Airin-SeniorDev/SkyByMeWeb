@@ -1,31 +1,45 @@
 // pages/cart.js
+'use client'
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/router'
+import { useRouter } from 'next/navigation'
 import SidebarLayout from '@/components/SidebarLayout'
+import { auth } from '@/lib/firebase'
+import { onAuthStateChanged } from 'firebase/auth'
 
 export default function CartPage() {
   const [cart, setCart] = useState([])
+  const [user, setUser] = useState(null)
   const router = useRouter()
 
   useEffect(() => {
-    const storedCart = localStorage.getItem('cart')
-    if (storedCart) setCart(JSON.parse(storedCart))
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      if (currentUser) {
+        setUser(currentUser)
+        const storedCart = localStorage.getItem(`cart_${currentUser.uid}`)
+        if (storedCart) setCart(JSON.parse(storedCart))
+      } else {
+        alert('⚠️ กรุณา Login ก่อนเข้าหน้านี้')
+        router.push('/login')
+      }
+    })
+
+    return () => unsubscribe()
   }, [])
 
   const removeItem = (index) => {
     const newCart = [...cart]
     newCart.splice(index, 1)
     setCart(newCart)
-    localStorage.setItem('cart', JSON.stringify(newCart))
+    localStorage.setItem(`cart_${user.uid}`, JSON.stringify(newCart))
   }
 
   const clearCart = () => {
     setCart([])
-    localStorage.removeItem('cart')
+    localStorage.removeItem(`cart_${user.uid}`)
   }
 
   const confirmOrder = () => {
-    localStorage.removeItem('cart')
+    localStorage.removeItem(`cart_${user.uid}`)
     router.push('/thank-you')
   }
 

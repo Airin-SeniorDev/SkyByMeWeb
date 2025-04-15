@@ -1,39 +1,58 @@
-// pages/shop.js
+'use client'
 import { useEffect, useState } from 'react'
+import { onAuthStateChanged } from 'firebase/auth'
+import { auth } from '@/lib/firebase'
 import SidebarLayout from '@/components/SidebarLayout'
 
 export default function Shop() {
   const [images, setImages] = useState([])
   const [cart, setCart] = useState([])
   const [favorites, setFavorites] = useState([])
+  const [user, setUser] = useState(null)
 
   useEffect(() => {
     const storedGallery = localStorage.getItem('gallery')
     if (storedGallery) setImages(JSON.parse(storedGallery))
 
-    const storedCart = localStorage.getItem('cart')
-    if (storedCart) setCart(JSON.parse(storedCart))
+    // ✅ listen user login/logout
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser)
 
-    const storedFav = localStorage.getItem('favorites')
-    if (storedFav) setFavorites(JSON.parse(storedFav))
+      if (currentUser) {
+        const storedCart = localStorage.getItem(`cart_${currentUser.uid}`)
+        const storedFav = localStorage.getItem(`favorites_${currentUser.uid}`)
+
+        if (storedCart) setCart(JSON.parse(storedCart))
+        if (storedFav) setFavorites(JSON.parse(storedFav))
+      }
+    })
+
+    return () => unsubscribe()
   }, [])
 
   const addToCart = (item) => {
+    if (!user) return alert('กรุณา Login ก่อนเพิ่มสินค้าในตะกร้า')
+
     const updatedCart = [...cart, item]
     setCart(updatedCart)
-    localStorage.setItem('cart', JSON.stringify(updatedCart))
+    localStorage.setItem(`cart_${user.uid}`, JSON.stringify(updatedCart))
+    alert(`✅ "${item.displayName}" added to cart`)
   }
 
   const toggleFavorite = (item) => {
+    if (!user) return alert('กรุณา Login ก่อนเพิ่มรายการโปรด')
+
     const isFav = favorites.find((fav) => fav.name === item.name)
     let updatedFav
+
     if (isFav) {
       updatedFav = favorites.filter((fav) => fav.name !== item.name)
     } else {
       updatedFav = [...favorites, item]
     }
+
     setFavorites(updatedFav)
-    localStorage.setItem('favorites', JSON.stringify(updatedFav))
+    localStorage.setItem(`favorites_${user.uid}`, JSON.stringify(updatedFav))
   }
 
   const isFavorite = (name) => favorites.some((fav) => fav.name === name)
