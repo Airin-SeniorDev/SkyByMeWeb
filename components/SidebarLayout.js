@@ -1,9 +1,26 @@
-// components/SidebarLayout.js
+'use client'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import { onAuthStateChanged } from 'firebase/auth'
+import { auth } from '@/lib/firebase'
+
+const adminEmails = ['tmgamer13253@gmail.com'] // ✅ ใส่อีเมลแอดมินที่อนุญาต
 
 export default function SidebarLayout({ children }) {
   const pathname = usePathname()
+  const [isAdmin, setIsAdmin] = useState(false)
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user && adminEmails.includes(user.email)) {
+        setIsAdmin(true)
+      } else {
+        setIsAdmin(false)
+      }
+    })
+    return () => unsubscribe()
+  }, [])
 
   const linkStyle = {
     color: '#fff',
@@ -24,9 +41,12 @@ export default function SidebarLayout({ children }) {
           <Link href="/shop" legacyBehavior>
             <a className={pathname === '/shop' ? 'active' : ''} style={linkStyle}>🛍️ Shop</a>
           </Link>
-          <Link href="/gallery" legacyBehavior>
-            <a className={pathname === '/gallery' ? 'active' : ''} style={linkStyle}>🖼️ Gallery</a>
-          </Link>
+          {/* ✅ แสดงเฉพาะเมื่อเป็นแอดมิน */}
+          {isAdmin && (
+            <Link href="/gallery" legacyBehavior>
+              <a className={pathname === '/gallery' ? 'active' : ''} style={linkStyle}>🖼️ Gallery</a>
+            </Link>
+          )}
           <Link href="/favorites" legacyBehavior>
             <a className={pathname === '/favorites' ? 'active' : ''} style={linkStyle}>💜 Favorites</a>
           </Link>

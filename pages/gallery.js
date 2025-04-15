@@ -1,11 +1,35 @@
+'use client'
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/router'
+import { onAuthStateChanged } from 'firebase/auth'
+import { auth } from '@/lib/firebase'
 import SidebarLayout from '@/components/SidebarLayout'
 
+const adminEmails = ['tmgamer13253@gmail.com'] // ใส่อีเมลแอดมินที่นี่
+
 export default function GalleryPage() {
+  const router = useRouter()
+  const [loading, setLoading] = useState(true)
+  const [isAdmin, setIsAdmin] = useState(false)
+
   const [filename, setFilename] = useState('')
   const [displayName, setDisplayName] = useState('')
   const [price, setPrice] = useState('')
   const [images, setImages] = useState([])
+
+  // 🔐 ตรวจสอบสิทธิ์ผู้ใช้
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user && adminEmails.includes(user.email)) {
+        setIsAdmin(true)
+      } else {
+        router.push('/') // redirect ถ้าไม่ใช่แอดมิน
+      }
+      setLoading(false)
+    })
+
+    return () => unsubscribe()
+  }, [])
 
   useEffect(() => {
     const stored = localStorage.getItem('gallery')
@@ -22,7 +46,9 @@ export default function GalleryPage() {
     const newImage = { name: filename, displayName, price: parseInt(price), available: false }
     const updated = [...images, newImage]
     saveImages(updated)
-    setFilename(''); setDisplayName(''); setPrice('')
+    setFilename('')
+    setDisplayName('')
+    setPrice('')
   }
 
   const toggleAvailable = (index) => {
@@ -36,6 +62,9 @@ export default function GalleryPage() {
     updated.splice(index, 1)
     saveImages(updated)
   }
+
+  if (loading) return <p>Loading...</p>
+  if (!isAdmin) return null
 
   return (
     <SidebarLayout>
