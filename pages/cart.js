@@ -7,11 +7,25 @@ export default function CartPage() {
   const [cart, setCart] = useState([])
   const user = auth.currentUser
 
+  // ✅ Sync availability จาก gallery เข้า cart
   useEffect(() => {
-    if (user) {
-      const uid = user.uid
-      const stored = localStorage.getItem(`cart_${uid}`)
-      if (stored) setCart(JSON.parse(stored))
+    if (!user) return
+
+    const stored = localStorage.getItem(`cart_${user.uid}`)
+    const storedGallery = localStorage.getItem('gallery')
+
+    if (stored) {
+      let cartItems = JSON.parse(stored)
+
+      if (storedGallery) {
+        const gallery = JSON.parse(storedGallery)
+        cartItems = cartItems.map((item) => {
+          const match = gallery.find((g) => g.name === item.name)
+          return match ? { ...item, available: match.available } : item
+        })
+      }
+
+      setCart(cartItems)
     }
   }, [user])
 
@@ -28,14 +42,16 @@ export default function CartPage() {
   }
 
   const confirmOrder = () => {
-  localStorage.removeItem(`cart_${user.uid}`)
-  setCart([])
-  alert('✅ Order placed!')
-  window.location.href = '/thank-you' // ✅ redirect ไปหน้า thank-you
-}
+    localStorage.removeItem(`cart_${user.uid}`)
+    setCart([])
+    alert('✅ Order placed!')
+    window.location.href = '/thank-you'
+  }
 
-
-  const total = cart.reduce((sum, item) => sum + item.price, 0)
+  const total = cart.reduce((sum, item) => {
+    const isUnavailable = item.available === false && !item.alwaysAvailable
+    return isUnavailable ? sum : sum + item.price
+  }, 0)
 
   return (
     <SidebarLayout>
@@ -46,50 +62,71 @@ export default function CartPage() {
         ) : (
           <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
             <div style={{ flex: 2 }}>
-              {cart.map((item, index) => (
-                <div
-                  key={index}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    marginBottom: '1rem',
-                    background: '#fff',
-                    borderRadius: '12px',
-                    boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
-                    overflow: 'hidden',
-                  }}
-                >
-                  <img
-                    src={`/images/${item.name}`}
-                    alt={item.displayName}
+              {cart.map((item, index) => {
+                const isUnavailable = item.available === false && !item.alwaysAvailable
+
+                return (
+                  <div
+                    key={index}
                     style={{
-                      width: '250px',
-                      height: '120px',
-                      objectFit: 'cover',
-                      borderRadius: '12px 0 0 12px',
-                    }}
-                  />
-                  <div style={{ flex: 1, padding: '1rem' }}>
-                    <h3 style={{ margin: 0 }}>{item.displayName}</h3>
-                    <p style={{ margin: '0.5rem 0' }}>${item.price}</p>
-                  </div>
-                  <button
-                    onClick={() => removeItem(index)}
-                    style={{
-                      background: '#ff6b6b',
-                      border: 'none',
-                      color: '#fff',
-                      padding: '0.5rem 1rem',
-                      borderRadius: '0 12px 12px 0',
-                      fontWeight: 'bold',
-                      cursor: 'pointer',
-                      height: '100%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      marginBottom: '1rem',
+                      background: isUnavailable ? '#ffe5e5' : '#fff',
+                      borderRadius: '12px',
+                      boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
+                      overflow: 'hidden',
+                      opacity: isUnavailable ? 0.5 : 1
                     }}
                   >
-                    🗑️ Remove
-                  </button>
-                </div>
-              ))}
+                    <div style={{ position: 'relative' }}>
+                      <img
+                        src={`/images/${item.name}`}
+                        alt={item.displayName}
+                        style={{
+                          width: '250px',
+                          height: '120px',
+                          objectFit: 'cover',
+                          borderRadius: '12px 0 0 12px',
+                        }}
+                      />
+                      {isUnavailable && (
+                        <div style={{
+                          position: 'absolute',
+                          top: '10px',
+                          left: '10px',
+                          background: 'red',
+                          color: 'white',
+                          padding: '0.2rem 0.5rem',
+                          borderRadius: '6px',
+                          fontSize: '0.8rem'
+                        }}>
+                          Out of Stock
+                        </div>
+                      )}
+                    </div>
+                    <div style={{ flex: 1, padding: '1rem' }}>
+                      <h3 style={{ margin: 0 }}>{item.displayName}</h3>
+                      <p style={{ margin: '0.5rem 0' }}>${item.price}</p>
+                    </div>
+                    <button
+                      onClick={() => removeItem(index)}
+                      style={{
+                        background: '#ff6b6b',
+                        border: 'none',
+                        color: '#fff',
+                        padding: '0.5rem 1rem',
+                        borderRadius: '0 12px 12px 0',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        height: '100%',
+                      }}
+                    >
+                      🗑️ Remove
+                    </button>
+                  </div>
+                )
+              })}
               <button
                 onClick={clearCart}
                 style={{
@@ -136,17 +173,18 @@ export default function CartPage() {
               <p style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>Total: ${total}</p>
               <button
                 onClick={confirmOrder}
+                disabled={total === 0}
                 style={{
                   marginTop: '1rem',
                   width: '100%',
-                  backgroundColor: '#2ecc71',
+                  backgroundColor: total === 0 ? '#ccc' : '#2ecc71',
                   color: '#fff',
                   padding: '1rem',
                   fontSize: '1rem',
                   fontWeight: 'bold',
                   border: 'none',
                   borderRadius: '8px',
-                  cursor: 'pointer',
+                  cursor: total === 0 ? 'not-allowed' : 'pointer',
                 }}
               >
                 ✅ Confirm Order

@@ -13,9 +13,20 @@ export default function FavoritesPage() {
       setUser(currentUser)
 
       if (currentUser) {
-        const stored = localStorage.getItem(`favorites_${currentUser.uid}`)
-        if (stored) {
-          setFavorites(JSON.parse(stored))
+        const storedFavorites = localStorage.getItem(`favorites_${currentUser.uid}`)
+        const storedGallery = localStorage.getItem('gallery')
+
+        if (storedFavorites && storedGallery) {
+          const favs = JSON.parse(storedFavorites)
+          const gallery = JSON.parse(storedGallery)
+
+          // ✅ sync availability จาก gallery
+          const merged = favs.map(fav => {
+            const match = gallery.find(g => g.name === fav.name)
+            return match ? { ...fav, available: match.available } : fav
+          })
+
+          setFavorites(merged)
         }
       }
     })
@@ -32,6 +43,8 @@ export default function FavoritesPage() {
 
   const addToCart = (item) => {
     if (!user) return alert('กรุณา Login ก่อนเพิ่มสินค้าในตะกร้า')
+    if (!item.available) return
+
     const stored = localStorage.getItem(`cart_${user.uid}`)
     const cart = stored ? JSON.parse(stored) : []
     const updatedCart = [...cart, item]
@@ -63,8 +76,28 @@ export default function FavoritesPage() {
                   overflow: 'hidden',
                   boxShadow: '0 4px 10px rgba(0,0,0,0.1)',
                   background: '#fff',
+                  opacity: item.available ? 1 : 0.5,
+                  position: 'relative',
                 }}
               >
+                {!item.available && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: '10px',
+                      left: '10px',
+                      background: 'red',
+                      color: 'white',
+                      padding: '0.2rem 0.5rem',
+                      borderRadius: '6px',
+                      fontSize: '0.8rem',
+                      fontWeight: 'bold',
+                      zIndex: 2,
+                    }}
+                  >
+                    Out of Stock
+                  </div>
+                )}
                 <img
                   src={`/images/${item.name}`}
                   alt={item.displayName}
@@ -80,19 +113,20 @@ export default function FavoritesPage() {
                   <p>${item.price}</p>
                   <button
                     onClick={() => addToCart(item)}
+                    disabled={!item.available}
                     style={{
                       marginTop: '10px',
-                      background: '#2ecc71',
+                      background: item.available ? '#2ecc71' : '#ccc',
                       color: '#fff',
                       padding: '0.5rem 1rem',
                       border: 'none',
                       borderRadius: '8px',
-                      cursor: 'pointer',
+                      cursor: item.available ? 'pointer' : 'not-allowed',
                       width: '100%',
                       fontWeight: 'bold',
                     }}
                   >
-                    Add to cart
+                    {item.available ? 'Add to cart' : 'Unavailable'}
                   </button>
                   <button
                     onClick={() => removeFromFavorites(item.name)}

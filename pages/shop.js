@@ -9,11 +9,13 @@ export default function Shop() {
   const [cart, setCart] = useState([])
   const [favorites, setFavorites] = useState([])
   const [user, setUser] = useState(null)
-  const [priceFilter, setPriceFilter] = useState('all') // ✅ ช่วงราคา
+  const [priceFilter, setPriceFilter] = useState('all')
 
   useEffect(() => {
     const storedGallery = localStorage.getItem('gallery')
-    if (storedGallery) setImages(JSON.parse(storedGallery))
+    if (storedGallery) {
+      setImages(JSON.parse(storedGallery))
+    }
 
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser)
@@ -22,8 +24,8 @@ export default function Shop() {
         const storedCart = localStorage.getItem(`cart_${currentUser.uid}`)
         const storedFav = localStorage.getItem(`favorites_${currentUser.uid}`)
 
-        if (storedCart) setCart(JSON.parse(storedCart))
-        if (storedFav) setFavorites(JSON.parse(storedFav))
+        if (storedCart) setCart(JSON.parse(storedCart) || [])
+        if (storedFav) setFavorites(JSON.parse(storedFav) || [])
       }
     })
 
@@ -58,7 +60,7 @@ export default function Shop() {
     if (priceFilter === 'low') return item.price < 20
     if (priceFilter === 'mid') return item.price >= 20 && item.price <= 39
     if (priceFilter === 'high') return item.price >= 40
-    return true // 'all'
+    return true
   })
 
   return (
@@ -66,7 +68,7 @@ export default function Shop() {
       <section className="shop" style={{ padding: '2rem' }}>
         <h1 style={{ fontSize: '2rem' }}>🛍️ Shop</h1>
 
-        {/* ✅ กรองตามช่วงราคา */}
+        {/* ✅ Dropdown กรองราคาภาพ */}
         <select
           value={priceFilter}
           onChange={(e) => setPriceFilter(e.target.value)}
