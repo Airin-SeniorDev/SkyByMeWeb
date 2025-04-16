@@ -175,7 +175,7 @@ export default function Home() {
           <div>
             <h3>Contact</h3>
             <p>095-118-9473</p>
-            <p>tmgamer13253@gmail.com</p>
+            <p>t.kongbunpring@gmail.com</p>
             <a href="https://www.instagram.com/nxic_ky/" style={footerLink}>Instagram</a>
           </div>
         </div>
