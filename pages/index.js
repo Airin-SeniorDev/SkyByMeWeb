@@ -1,13 +1,17 @@
+// pages/index.js
 'use client'
+// ✅ ใช้ใน Client เพราะมี useState, useEffect, localStorage, auth
+
 import Head from 'next/head'
 import { useState, useEffect } from 'react'
 import { auth } from '@/lib/firebase'
 import SidebarLayout from '@/components/SidebarLayout'
 
 export default function Home() {
-  const [cart, setCart] = useState([])
-  const [user, setUser] = useState(null)
+  const [cart, setCart] = useState([]) // ✅ เก็บข้อมูลตะกร้า
+  const [user, setUser] = useState(null) // ✅ ผู้ใช้ที่ล็อกอิน
 
+  // ✅ ดึงข้อมูลตะกร้าจาก localStorage หาก user login
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((currentUser) => {
       setUser(currentUser)
@@ -20,6 +24,7 @@ export default function Home() {
     return () => unsubscribe()
   }, [])
 
+  // ✅ ฟังก์ชันเพิ่มสินค้าลงตะกร้า
   const addToCart = (item) => {
     if (!user) {
       alert('กรุณา Login ก่อนเพิ่มสินค้าในตะกร้า')
@@ -39,7 +44,7 @@ export default function Home() {
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       </Head>
 
-      {/* 🔷 Hero */}
+      {/* 🔷 Hero Section */}
       <section
         style={{
           backgroundImage: "url('/images/LINE_ALBUM_Sky_230103_17.jpg')",
@@ -89,7 +94,7 @@ export default function Home() {
             <p style={{ fontSize: '1.1rem', lineHeight: '1.6' }}>
               Some days are bright like the clear sky.<br />
               Some are gloomy with clouds.<br /><br />
-              Even if we can’t control the sky, we can choose how we live.  
+              Even if we can’t control the sky, we can choose how we live.
             </p>
           </div>
         </div>

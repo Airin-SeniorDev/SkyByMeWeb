@@ -1,18 +1,23 @@
-'use client'
+// pages/favorites.js
+'use client' 
+// ✅ ระบุว่าเป็น Client Component เพราะใช้ useEffect, useState, localStorage, Firebase Auth
+
 import { useEffect, useState } from 'react'
 import { onAuthStateChanged } from 'firebase/auth'
 import { auth } from '@/lib/firebase'
 import SidebarLayout from '@/components/SidebarLayout'
 
 export default function FavoritesPage() {
-  const [favorites, setFavorites] = useState([])
-  const [user, setUser] = useState(null)
+  const [favorites, setFavorites] = useState([]) // ✅ รายการ favorite ของผู้ใช้
+  const [user, setUser] = useState(null) // ✅ เก็บข้อมูล user ที่ login
 
   useEffect(() => {
+    // ✅ เมื่อผู้ใช้ login / logout → ตรวจสอบสิทธิ์
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser)
 
       if (currentUser) {
+        // ✅ ดึง favorites และ gallery จาก localStorage
         const storedFavorites = localStorage.getItem(`favorites_${currentUser.uid}`)
         const storedGallery = localStorage.getItem('gallery')
 
@@ -20,7 +25,7 @@ export default function FavoritesPage() {
           const favs = JSON.parse(storedFavorites)
           const gallery = JSON.parse(storedGallery)
 
-          // ✅ sync availability จาก gallery
+          // ✅ Sync availability จาก gallery ไปยัง favorite
           const merged = favs.map(fav => {
             const match = gallery.find(g => g.name === fav.name)
             return match ? { ...fav, available: match.available } : fav
@@ -31,9 +36,10 @@ export default function FavoritesPage() {
       }
     })
 
-    return () => unsubscribe()
+    return () => unsubscribe() // ✅ cleanup เมื่อ component ถูก unmount
   }, [])
 
+  // ✅ ลบรายการโปรด
   const removeFromFavorites = (name) => {
     if (!user) return
     const updated = favorites.filter(item => item.name !== name)
@@ -41,9 +47,10 @@ export default function FavoritesPage() {
     localStorage.setItem(`favorites_${user.uid}`, JSON.stringify(updated))
   }
 
+  // ✅ เพิ่มรายการโปรดเข้า cart
   const addToCart = (item) => {
     if (!user) return alert('กรุณา Login ก่อนเพิ่มสินค้าในตะกร้า')
-    if (!item.available) return
+    if (!item.available) return // ✅ ห้ามเพิ่มถ้าของหมด
 
     const stored = localStorage.getItem(`cart_${user.uid}`)
     const cart = stored ? JSON.parse(stored) : []
@@ -56,6 +63,7 @@ export default function FavoritesPage() {
     <SidebarLayout>
       <section className="favorites" style={{ padding: '2rem' }}>
         <h1 style={{ fontSize: '2rem' }}>💜 Your Favorites</h1>
+
         <div
           style={{
             display: 'flex',
@@ -64,6 +72,7 @@ export default function FavoritesPage() {
             marginTop: '2rem',
           }}
         >
+          {/* ✅ ถ้ายังไม่มี favorite */}
           {favorites.length === 0 ? (
             <p>No favorites yet.</p>
           ) : (
@@ -80,6 +89,7 @@ export default function FavoritesPage() {
                   position: 'relative',
                 }}
               >
+                {/* ✅ ป้าย Out of Stock ถ้าไม่พร้อมขาย */}
                 {!item.available && (
                   <div
                     style={{
@@ -98,6 +108,8 @@ export default function FavoritesPage() {
                     Out of Stock
                   </div>
                 )}
+
+                {/* ✅ รูปภาพสินค้า */}
                 <img
                   src={`/images/${item.name}`}
                   alt={item.displayName}
@@ -106,11 +118,15 @@ export default function FavoritesPage() {
                     height: '180px',
                     objectFit: 'cover',
                   }}
-                  onError={(e) => { e.target.src = '/images/default.jpg' }}
+                  onError={(e) => { e.target.src = '/images/default.jpg' }} // ✅ fallback ถ้ารูปไม่โหลด
                 />
+
+                {/* ✅ เนื้อหาด้านล่าง: ชื่อ, ราคา, ปุ่ม */}
                 <div style={{ padding: '1rem', textAlign: 'center' }}>
                   <h3>{item.displayName}</h3>
                   <p>${item.price}</p>
+
+                  {/* ✅ ปุ่มเพิ่มลง cart */}
                   <button
                     onClick={() => addToCart(item)}
                     disabled={!item.available}
@@ -128,6 +144,8 @@ export default function FavoritesPage() {
                   >
                     {item.available ? 'Add to cart' : 'Unavailable'}
                   </button>
+
+                  {/* ✅ ปุ่มลบจาก favorites */}
                   <button
                     onClick={() => removeFromFavorites(item.name)}
                     style={{

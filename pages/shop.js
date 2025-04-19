@@ -1,16 +1,20 @@
+// pages/shop.js
 'use client'
+// ✅ Client Component เพราะใช้ useState, useEffect, localStorage, Firebase
+
 import { useEffect, useState } from 'react'
 import { onAuthStateChanged } from 'firebase/auth'
 import { auth } from '@/lib/firebase'
 import SidebarLayout from '@/components/SidebarLayout'
 
 export default function Shop() {
-  const [images, setImages] = useState([])
-  const [cart, setCart] = useState([])
-  const [favorites, setFavorites] = useState([])
-  const [user, setUser] = useState(null)
-  const [priceFilter, setPriceFilter] = useState('all')
+  const [images, setImages] = useState([]) // ✅ รูปภาพทั้งหมดจาก localStorage (gallery)
+  const [cart, setCart] = useState([]) // ✅ ตะกร้าสินค้า
+  const [favorites, setFavorites] = useState([]) // ✅ รายการโปรด
+  const [user, setUser] = useState(null) // ✅ ผู้ใช้ที่ login อยู่
+  const [priceFilter, setPriceFilter] = useState('all') // ✅ ตัวกรองราคา
 
+  // ✅ โหลดข้อมูลเมื่อหน้าโหลดครั้งแรก
   useEffect(() => {
     const storedGallery = localStorage.getItem('gallery')
     if (storedGallery) {
@@ -32,6 +36,7 @@ export default function Shop() {
     return () => unsubscribe()
   }, [])
 
+  // ✅ เพิ่มภาพลงตะกร้า
   const addToCart = (item) => {
     if (!user) return alert('กรุณา Login ก่อนเพิ่มสินค้าในตะกร้า')
     if (!item.available) return
@@ -42,6 +47,7 @@ export default function Shop() {
     alert(`✅ "${item.displayName}" added to cart`)
   }
 
+  // ✅ Toggle เพิ่ม/ลบ จากรายการโปรด
   const toggleFavorite = (item) => {
     if (!user) return alert('กรุณา Login ก่อนเพิ่มรายการโปรด')
 
@@ -54,8 +60,10 @@ export default function Shop() {
     localStorage.setItem(`favorites_${user.uid}`, JSON.stringify(updatedFav))
   }
 
+  // ✅ เช็คว่าเป็น favorite หรือไม่
   const isFavorite = (name) => favorites.some((fav) => fav.name === name)
 
+  // ✅ กรองภาพตามช่วงราคา
   const filteredImages = images.filter((item) => {
     if (priceFilter === 'low') return item.price < 20
     if (priceFilter === 'mid') return item.price >= 20 && item.price <= 39
@@ -68,7 +76,7 @@ export default function Shop() {
       <section className="shop" style={{ padding: '2rem' }}>
         <h1 style={{ fontSize: '2rem' }}>🛍️ Shop</h1>
 
-        {/* ✅ Dropdown กรองราคาภาพ */}
+        {/* ✅ ตัวเลือกกรองราคาภาพ */}
         <select
           value={priceFilter}
           onChange={(e) => setPriceFilter(e.target.value)}
@@ -87,6 +95,7 @@ export default function Shop() {
           <option value="high">💎 40 ขึ้นไป</option>
         </select>
 
+        {/* ✅ แสดงรายการภาพ */}
         <div
           style={{
             display: 'flex',
@@ -108,6 +117,7 @@ export default function Shop() {
                 position: 'relative',
               }}
             >
+              {/* ✅ ป้าย Out of Stock */}
               {!item.available && (
                 <div
                   style={{
@@ -127,6 +137,7 @@ export default function Shop() {
                 </div>
               )}
 
+              {/* ✅ รูป + ปุ่ม Favorite */}
               <div style={{ position: 'relative' }}>
                 <img
                   src={`/images/${item.name}`}
@@ -153,6 +164,8 @@ export default function Shop() {
                   {isFavorite(item.name) ? '💜' : '🤍'}
                 </div>
               </div>
+
+              {/* ✅ ข้อมูลภาพ + ปุ่ม Add to Cart */}
               <div style={{ padding: '1rem', textAlign: 'center' }}>
                 <h3>{item.displayName}</h3>
                 <p>${item.price}</p>
