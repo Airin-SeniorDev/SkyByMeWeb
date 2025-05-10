@@ -1,13 +1,16 @@
-'use client'
+// pages/cart.js
+'use client' 
+// ✅ Client Component เพราะใช้ useState, useEffect และ localStorage
+
 import { useEffect, useState } from 'react'
 import SidebarLayout from '@/components/SidebarLayout'
 import { auth } from '@/lib/firebase'
 
 export default function CartPage() {
   const [cart, setCart] = useState([])
-  const user = auth.currentUser
+  const user = auth.currentUser // ✅ ดึงข้อมูล user จาก Firebase ที่ login อยู่
 
-  // ✅ Sync availability จาก gallery เข้า cart
+  // ✅ ซิงค์ข้อมูล availability จาก gallery เข้า cart (กรณีมีสินค้าไม่พร้อมขาย)
   useEffect(() => {
     if (!user) return
 
@@ -17,6 +20,7 @@ export default function CartPage() {
     if (stored) {
       let cartItems = JSON.parse(stored)
 
+      // ✅ เช็คสินค้าใน cart ว่ายัง available อยู่มั้ย
       if (storedGallery) {
         const gallery = JSON.parse(storedGallery)
         cartItems = cartItems.map((item) => {
@@ -29,6 +33,7 @@ export default function CartPage() {
     }
   }, [user])
 
+  // ✅ ลบสินค้ารายตัว
   const removeItem = (index) => {
     const newCart = [...cart]
     newCart.splice(index, 1)
@@ -36,18 +41,21 @@ export default function CartPage() {
     localStorage.setItem(`cart_${user.uid}`, JSON.stringify(newCart))
   }
 
+  // ✅ ล้าง cart ทั้งหมด
   const clearCart = () => {
     setCart([])
     localStorage.removeItem(`cart_${user.uid}`)
   }
 
+  // ✅ กดยืนยันคำสั่งซื้อ
   const confirmOrder = () => {
     localStorage.removeItem(`cart_${user.uid}`)
     setCart([])
     alert('✅ Order placed!')
-    window.location.href = '/thank-you'
+    window.location.href = '/thank-you' // ✅ ไปหน้าขอบคุณหลังสั่งซื้อ
   }
 
+  // ✅ คำนวณราคารวม (ไม่รวมสินค้าที่ไม่พร้อมขาย)
   const total = cart.reduce((sum, item) => {
     const isUnavailable = item.available === false && !item.alwaysAvailable
     return isUnavailable ? sum : sum + item.price
@@ -57,10 +65,13 @@ export default function CartPage() {
     <SidebarLayout>
       <div style={{ maxWidth: '1200px', margin: 'auto', padding: '2rem' }}>
         <h1 style={{ fontSize: '2rem', marginBottom: '1.5rem' }}>🛒 Your Cart</h1>
+
+        {/* ✅ ถ้า cart ว่าง */}
         {cart.length === 0 ? (
           <p style={{ fontSize: '1.1rem', color: '#888' }}>🔒 Your cart is empty.</p>
         ) : (
           <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
+            {/* ✅ พื้นที่รายการสินค้า */}
             <div style={{ flex: 2 }}>
               {cart.map((item, index) => {
                 const isUnavailable = item.available === false && !item.alwaysAvailable
@@ -81,7 +92,7 @@ export default function CartPage() {
                   >
                     <div style={{ position: 'relative' }}>
                       <img
-                        src={`/images/${item.name}`}
+                        src={`/images/${item.name}`} // ✅ แสดงภาพจาก public/images
                         alt={item.displayName}
                         style={{
                           width: '250px',
@@ -90,6 +101,7 @@ export default function CartPage() {
                           borderRadius: '12px 0 0 12px',
                         }}
                       />
+                      {/* ✅ ป้าย Out of Stock */}
                       {isUnavailable && (
                         <div style={{
                           position: 'absolute',
@@ -127,6 +139,8 @@ export default function CartPage() {
                   </div>
                 )
               })}
+
+              {/* ✅ ปุ่มล้าง cart */}
               <button
                 onClick={clearCart}
                 style={{
@@ -144,6 +158,7 @@ export default function CartPage() {
               </button>
             </div>
 
+            {/* ✅ สรุปคำสั่งซื้อ */}
             <div
               style={{
                 flex: 1,
@@ -157,6 +172,7 @@ export default function CartPage() {
               <h2>Order Summary</h2>
               <p style={{ margin: '1rem 0' }}>Subtotal: <strong>${total}</strong></p>
               <p>Shipping: <strong>Free</strong></p>
+
               <div style={{ margin: '1.5rem 0' }}>
                 <input
                   type="text"
@@ -170,6 +186,7 @@ export default function CartPage() {
                   }}
                 />
               </div>
+
               <p style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>Total: ${total}</p>
               <button
                 onClick={confirmOrder}
